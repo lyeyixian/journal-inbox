@@ -1,0 +1,37 @@
+{
+  "name": "journal-inbox",
+  "build": {
+    "dockerfile": "../Dockerfile",
+    "context": "..",
+    "target": "dev"
+  },
+  "remoteUser": "node",
+  "features": {
+    // Installs the Docker CLI and mounts the host's Docker socket, so the Compose smoke test runs from inside.
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+  },
+  "mounts": [
+    // Same mount point production uses. Run `claude` once inside to log in.
+    "source=journal-inbox-claude-credentials,target=/home/node/.claude,type=volume",
+    "source=journal-inbox-node-modules,target=${containerWorkspaceFolder}/node_modules,type=volume"
+  ],
+  "postCreateCommand": "sudo chown node:node node_modules /home/node/.claude 2>/dev/null; pnpm install --frozen-lockfile",
+  "forwardPorts": [8080],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "vitest.explorer",
+        "ms-azuretools.vscode-docker"
+      ],
+      "settings": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": { "source.fixAll.eslint": "explicit" },
+        "typescript.tsdk": "node_modules/typescript/lib",
+        "terminal.integrated.defaultProfile.linux": "zsh"
+      }
+    }
+  }
+}
