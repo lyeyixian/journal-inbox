@@ -13,11 +13,10 @@
     "sort": "node --env-file-if-exists=.env src/entrypoints/cli/sort.ts",
     "build": "pnpm lint && tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint .",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
+    "lint": "biome lint .",
+    "format": "biome check --write .",
     "test": "vitest run",
-    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test"
+    "check": "biome check . && pnpm typecheck && pnpm test"
   },
   "dependencies": {
     "@hono/node-server": "^2.1.1",
@@ -26,13 +25,9 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
+    "@biomejs/biome": "^2.5.14",
     "@types/node": "^24.13.5",
-    "eslint": "^10.10.0",
-    "eslint-config-prettier": "^10.1.8",
-    "prettier": "^3.9.7",
-    "typescript": "^6.0.3",
-    "typescript-eslint": "^8.70.0",
+    "typescript": "^7.0.2",
     "vitest": "^5.0.1"
   }
 }
