@@ -1,0 +1,105 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.14/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "ignoreUnknown": true
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "preset": "recommended"
+    }
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double"
+    }
+  },
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["src/domain/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": [
+                      "**/application/**",
+                      "**/infrastructure/**",
+                      "**/entrypoints/**"
+                    ],
+                    "message": "Domain imports nothing outside src/domain. Dependencies point inward only."
+                  },
+                  {
+                    "group": ["**", "!./**", "!../**", "!vitest"],
+                    "message": "Domain imports no packages and no Node built-ins. If this needs I/O or a library, it belongs behind a port in application."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/application/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["**/infrastructure/**", "**/entrypoints/**"],
+                    "message": "Application imports domain only. Declare a port in ports.ts and let entrypoints pass the adapter in."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/infrastructure/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["**/entrypoints/**"],
+                    "message": "Infrastructure never imports entrypoints. Entrypoints wire adapters, not the reverse."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}
