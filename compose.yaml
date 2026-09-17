@@ -1,0 +1,30 @@
+services:
+  journal-inbox:
+    build:
+      context: .
+      target: runtime
+    # With the Docker daemon enabled at boot, this brings the container back after a reboot.
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      # Bound to the tailnet address only, so nothing answers on the LAN or the internet.
+      - "${TAILNET_IP:?set TAILNET_IP to the output of tailscale ip -4}:${PORT:-8080}:${PORT:-8080}"
+    volumes:
+      - data:/data
+      - ${VAULT_REPO:?set VAULT_REPO}:/vault
+      - ${JOURNAL_REPO:?set JOURNAL_REPO}:/journal
+      - claude-credentials:/home/node/.claude
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        # $$ keeps Compose from interpolating; Node reads PORT inside the container.
+        - "fetch(`http://127.0.0.1:$${process.env.PORT}/health`).then(r => process.exit(r.ok ? 0 : 1), () => process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  data:
+  claude-credentials:
