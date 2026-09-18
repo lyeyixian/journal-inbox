@@ -101,12 +101,21 @@ The process reads config from env through the zod schema in `src/infrastructure/
 
 ```sh
 cp .env.example .env     # fill in every value
-tailscale ip -4          # goes in TAILNET_IP
 docker compose up -d --build
-curl http://$TAILNET_IP:8080/health
+curl http://127.0.0.1:8080/health
 ```
 
-Compose publishes the port on the tailnet address only, so nothing answers on the LAN or from the internet. Check that from a device off the tailnet.
+Compose publishes the port on `127.0.0.1` only, so the server itself can reach it and nothing on the LAN or the internet can. Tailscale then publishes it on the tailnet as a Tailscale Service with HTTPS:
+
+```sh
+tailscale serve --bg --service=svc:journal-inbox --https=443 http://127.0.0.1:8080
+```
+
+This is state in Tailscale, not in the repo, so a fresh server needs it run once. The service also needs approving in the Tailscale admin console before it answers, and a grant in the access controls so your devices can reach `svc:journal-inbox`. After that:
+
+```sh
+curl https://journal-inbox.<tailnet>.ts.net/health
+```
 
 `restart: unless-stopped` brings the container back after a crash or a reboot. It does not restart after `docker compose stop` or `kill`, because Docker treats those as you asking for it to stay down. To test the policy without a reboot, kill the process from inside:
 
@@ -120,8 +129,6 @@ The reboot case also needs the Docker daemon to start at boot:
 ```sh
 sudo systemctl enable docker
 ```
-
-Docker must start after Tailscale, or it cannot bind the tailnet address. If the container fails to start after a reboot with "cannot assign requested address", add a systemd drop-in for `docker.service` with `After=tailscaled.service` and `Wants=tailscaled.service`.
 
 Log Claude Code in once. The credentials persist in the `claude-credentials` volume.
 
