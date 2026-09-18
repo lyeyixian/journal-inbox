@@ -7,8 +7,9 @@ services:
     restart: unless-stopped
     env_file: .env
     ports:
-      # Bound to the tailnet address only, so nothing answers on the LAN or the internet.
-      - "${TAILNET_IP:?set TAILNET_IP to the output of tailscale ip -4}:${PORT:-8080}:${PORT:-8080}"
+      # Loopback only. tailscale serve publishes it on the tailnet with HTTPS,
+      # and nothing answers on the LAN or the internet.
+      - "127.0.0.1:${PORT:-8080}:${PORT:-8080}"
     volumes:
       - data:/data
       - ${VAULT_REPO:?set VAULT_REPO}:/vault
