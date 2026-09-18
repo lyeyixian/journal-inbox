@@ -21,6 +21,7 @@
     "vscode": {
       "extensions": [
         "biomejs.biome",
+        "TypeScriptTeam.native-preview",
         "vitest.explorer",
         "ms-azuretools.vscode-docker"
       ],
@@ -31,7 +32,7 @@
           "source.fixAll.biome": "explicit",
           "source.organizeImports.biome": "explicit"
         },
-        "typescript.tsdk": "node_modules/typescript/lib",
+        "typescript.experimental.useTsgo": true,
         "terminal.integrated.defaultProfile.linux": "zsh"
       }
     }
