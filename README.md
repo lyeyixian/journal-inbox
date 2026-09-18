@@ -108,7 +108,14 @@ curl http://$TAILNET_IP:8080/health
 
 Compose publishes the port on the tailnet address only, so nothing answers on the LAN or from the internet. Check that from a device off the tailnet.
 
-`restart: unless-stopped` brings the container back after a reboot as long as the Docker daemon starts at boot:
+`restart: unless-stopped` brings the container back after a crash or a reboot. It does not restart after `docker compose stop` or `kill`, because Docker treats those as you asking for it to stay down. To test the policy without a reboot, kill the process from inside:
+
+```sh
+docker compose exec journal-inbox node -e 'process.kill(1, "SIGTERM")'
+docker compose ps    # back to Up within seconds
+```
+
+The reboot case also needs the Docker daemon to start at boot:
 
 ```sh
 sudo systemctl enable docker
