@@ -4,7 +4,8 @@
 # system packages or Claude Code version.
 FROM node:24-bookworm-slim AS base
 ARG CLAUDE_CODE_VERSION=2.1.274
-ENV CLAUDE_CONFIG_DIR=/home/node/.claude
+# The version is pinned above, so the CLI must not update itself.
+ENV CLAUDE_CONFIG_DIR=/home/node/.claude DISABLE_AUTOUPDATER=1
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates \
     && rm -rf /var/lib/apt/lists/* \

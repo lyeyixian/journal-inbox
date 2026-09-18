@@ -22,6 +22,7 @@
       "extensions": [
         "biomejs.biome",
         "TypeScriptTeam.native-preview",
+        "anthropic.claude-code",
         "vitest.explorer",
         "ms-azuretools.vscode-docker"
       ],
@@ -32,7 +33,7 @@
           "source.fixAll.biome": "explicit",
           "source.organizeImports.biome": "explicit"
         },
-        "typescript.experimental.useTsgo": true,
+        "js/ts.experimental.useTsgo": true,
         "terminal.integrated.defaultProfile.linux": "zsh"
       }
     }
