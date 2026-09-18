@@ -17,8 +17,9 @@ WORKDIR /app
 # What the devcontainer opens. Source is bind-mounted, nothing is copied in.
 FROM base AS dev
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends git openssh-client curl less zsh \
-    && rm -rf /var/lib/apt/lists/*
+    && apt-get install -y --no-install-recommends git openssh-client curl less zsh sudo \
+    && rm -rf /var/lib/apt/lists/* \
+    && echo "node ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/node
 ENV SHELL=/bin/zsh
 USER node
 
