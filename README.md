@@ -2,104 +2,9 @@
 
 A Telegram bot that takes journal entries all day, prompts at the right moments, and sorts each day's thoughts into the vault, Linear or the journal overnight. One user, one container, on the home server.
 
-The vocabulary is in [docs/DOMAIN_LANGUAGE.md](docs/DOMAIN_LANGUAGE.md). Read it first. Code, file names and tickets use those words and no synonyms.
+## Run it
 
-## Layers
-
-Four folders under `src/`. Dependencies point inward only, and `pnpm lint` fails when one points outward.
-
-| Layer | Holds | May import |
-| --- | --- | --- |
-| `src/domain` | Entry, Thought, Slot, Rule, Prompt, Day, Pause as plain types, plus pure functions such as "given this event, this day and this time, which slot fires". Day state is a fold over the day's events and is never stored separately. | Nothing. No packages, no Node built-ins. |
-| `src/application` | The use cases RecordEntry, HandleEvent, SendPrompt, SortDay, ApplyCorrection and SendReport, and the port interfaces they depend on. | Domain. |
-| `src/infrastructure` | One adapter per port: grammY gateway, filesystem store, Groq transcriber, Linear client, Claude Code headless splitter, holiday list. Also the env config loader. | Application and domain. |
-| `src/entrypoints` | Three folders, one process. `api` is the Hono server with event intake and health. `worker` is the grammY polling loop, clock-driven slots, the before-bed recheck timer and the nightly sort. `cli` hand-runs the sort. `main.ts` is the only file that knows which adapter fills which port. | Everything. |
-
-The rule is `noRestrictedImports` in the `overrides` of `biome.json`. `pnpm build` runs lint first, so the Docker build fails on a bad import too.
-
-## Ports
-
-All nine are in `src/application/ports.ts`.
-
-| Port | What it does |
-| --- | --- |
-| Clock | Says what time it is. |
-| MessageChannel | Sends and deletes Telegram messages. |
-| Transcriber | Turns an OGG file into a transcript. |
-| EntryStore | Appends entries to the raw daily file and reads it back. |
-| EventLog | Appends events to the day's log and reads them back. |
-| ThoughtSplitter | Splits a raw daily file into thoughts, each with a destination. |
-| VaultWriter | Writes a thought to the vault repo. |
-| LinearWriter | Writes a thought to Linear. |
-| JournalWriter | Writes a thought to the journal repo. |
-
-## Stack
-
-Node 24, TypeScript strict, ESM, pnpm. Node runs the `.ts` files directly in dev, and `tsc` compiles them for production. TypeScript is on 7, the Go compiler.
-
-- grammY with the files plugin for Telegram
-- Hono with its Node adapter and zod validator for event intake
-- zod at every boundary: event payloads, config, splitter output
-- Vitest
-- Linear SDK
-- Groq over plain fetch
-- Claude Code headless mode for the splitter, version pinned by `CLAUDE_CODE_VERSION` in the Dockerfile
-- Biome for lint and format. It has its own parser, so it never blocks a TypeScript upgrade.
-
-A package joins `package.json` in the ticket that first uses it.
-
-## Storage
-
-Plain files in a Docker volume, no database.
-
-```
-/data
-  pause.json            outlives a day, so it sits outside the day folders
-  2026-09-17/           one folder per Singapore day
-    entries.md          the raw daily file
-    events.jsonl        append-only, one JSON object per line
-    audio/              OGG files
-    sort.json           the sort record, written by the sort run
-```
-
-The bot logs its own actions, such as prompt sent and prompt deleted, as events too. A restart loses nothing because day state is rebuilt from the log. SQLite is the upgrade path if cross-day queries get painful, and only infrastructure would change.
-
-## Assumptions
-
-Written down so we notice when one breaks.
-
-- One user, ever. No auth beyond the owner's Telegram id and one shared secret on event intake.
-- Singapore time is the day boundary, even in Malaysia.
-- The server is up whenever a prompt should fire. If it is down, prompts are lost, not queued.
-- Events arrive at most a few per minute. No queue, no backpressure.
-- The vault README conventions stay as they are today.
-- Groq's free tier stays free, and a voice note never exceeds Telegram's 20 MB download cap.
-- The LLM decides routing. We correct it, we don't hand-write routing rules.
-- A logged-in Claude Code CLI on the server is an acceptable way to run the splitter on the existing subscription.
-
-## Working on it
-
-Open the repo in VS Code and choose "Reopen in Container". The devcontainer builds the `dev` stage of the production Dockerfile, so Node, pnpm, system packages and the Claude Code version match the server. It installs the Biome, Vitest and Docker extensions and sets format on save, so lint, format and tests work with no editor setup outside the repo. The Docker CLI inside talks to the host's Docker socket.
-
-Claude Code credentials live in a named volume mounted at `/home/node/.claude`, the same path production uses. Run `claude` once inside the container to log in.
-
-| Command | Does |
-| --- | --- |
-| `pnpm check` | Biome format and lint, typecheck and tests. Run before every commit. |
-| `pnpm test` | Vitest, once. |
-| `pnpm lint` | Biome lint, including the layer rule. |
-| `pnpm format` | Formats, sorts imports and applies safe lint fixes. |
-| `pnpm dev` | Runs the process with reload, reading `.env`. |
-| `pnpm build` | Lint, then compile to `dist/`. |
-| `pnpm sort <day>` | Hand-runs the sort run. Not built yet. |
-
-## Config
-
-The process reads config from env through the zod schema in `src/infrastructure/config/env-config.ts`. It prints every missing value and exits with code 1 if any are absent. `.env.example` lists them all.
-
-## Deploying to the home server
-
-The server needs Docker with your user in the `docker` group, and an SSH key registered on GitHub so it can clone the private repos. Clone `journal-inbox`, `experience-vault` and `journal` side by side under `~/repo`, then:
+Needs Docker. From a clone of the repo:
 
 ```sh
 cp .env.example .env     # fill in every value
@@ -107,37 +12,15 @@ docker compose up -d --build
 curl http://127.0.0.1:8080/health
 ```
 
-Compose publishes the port on `127.0.0.1` only, so the server itself can reach it and nothing on the LAN or the internet can. Tailscale then publishes it on the tailnet as a Tailscale Service with HTTPS. The order matters:
+Compose publishes the port on `127.0.0.1` only, so nothing on the LAN or the internet can reach it.
 
-1. In the admin console under Services, create a service named `journal-inbox` on `tcp:443`.
-2. In the access controls, allow `tag:server` to host it and grant your devices access to `svc:journal-inbox`. Copy whatever the `yx-budget` service has.
-3. On the server:
-   ```sh
-   tailscale serve --bg --service=svc:journal-inbox --https=443 http://127.0.0.1:8080
-   ```
-4. Back in the console, open the service and approve `lyeyixian-mbp-intel` as its host. If the host is not listed, run `tailscale serve clear svc:journal-inbox` and repeat step 3, then reload the page.
+## Config
 
-The serve config lives in Tailscale, not in the repo, so a fresh server needs steps 3 and 4 again. Once approved:
+The process reads config from env through the zod schema in `src/infrastructure/config/env-config.ts`. It prints every missing value and exits with code 1 if any are absent. `.env.example` lists them all.
 
-```sh
-curl https://journal-inbox.taila5aaaf.ts.net/health
-```
+## More
 
-`restart: unless-stopped` brings the container back after a crash or a reboot. It does not restart after `docker compose stop` or `kill`, because Docker treats those as you asking for it to stay down. To test the policy without a reboot, kill the process from inside:
-
-```sh
-docker compose exec journal-inbox node -e 'process.kill(1, "SIGTERM")'
-docker compose ps    # back to Up within seconds
-```
-
-The reboot case also needs the Docker daemon to start at boot:
-
-```sh
-sudo systemctl enable docker
-```
-
-Log Claude Code in once. The credentials persist in the `claude-credentials` volume.
-
-```sh
-docker compose exec journal-inbox claude
-```
+- [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for the home server and the Tailscale Service
+- [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for the devcontainer and the commands
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for layers, ports, stack, storage and assumptions
+- [docs/DOMAIN_LANGUAGE.md](docs/DOMAIN_LANGUAGE.md) for the words everything uses
