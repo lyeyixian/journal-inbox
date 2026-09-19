@@ -99,22 +99,28 @@ The process reads config from env through the zod schema in `src/infrastructure/
 
 ## Deploying to the home server
 
+The server needs Docker with your user in the `docker` group, and an SSH key registered on GitHub so it can clone the private repos. Clone `journal-inbox`, `experience-vault` and `journal` side by side under `~/repo`, then:
+
 ```sh
 cp .env.example .env     # fill in every value
 docker compose up -d --build
 curl http://127.0.0.1:8080/health
 ```
 
-Compose publishes the port on `127.0.0.1` only, so the server itself can reach it and nothing on the LAN or the internet can. Tailscale then publishes it on the tailnet as a Tailscale Service with HTTPS:
+Compose publishes the port on `127.0.0.1` only, so the server itself can reach it and nothing on the LAN or the internet can. Tailscale then publishes it on the tailnet as a Tailscale Service with HTTPS. The order matters:
+
+1. In the admin console under Services, create a service named `journal-inbox` on `tcp:443`.
+2. In the access controls, allow `tag:server` to host it and grant your devices access to `svc:journal-inbox`. Copy whatever the `yx-budget` service has.
+3. On the server:
+   ```sh
+   tailscale serve --bg --service=svc:journal-inbox --https=443 http://127.0.0.1:8080
+   ```
+4. Back in the console, open the service and approve `lyeyixian-mbp-intel` as its host. If the host is not listed, run `tailscale serve clear svc:journal-inbox` and repeat step 3, then reload the page.
+
+The serve config lives in Tailscale, not in the repo, so a fresh server needs steps 3 and 4 again. Once approved:
 
 ```sh
-tailscale serve --bg --service=svc:journal-inbox --https=443 http://127.0.0.1:8080
-```
-
-This is state in Tailscale, not in the repo, so a fresh server needs it run once. The service also needs approving in the Tailscale admin console before it answers, and a grant in the access controls so your devices can reach `svc:journal-inbox`. After that:
-
-```sh
-curl https://journal-inbox.<tailnet>.ts.net/health
+curl https://journal-inbox.taila5aaaf.ts.net/health
 ```
 
 `restart: unless-stopped` brings the container back after a crash or a reboot. It does not restart after `docker compose stop` or `kill`, because Docker treats those as you asking for it to stay down. To test the policy without a reboot, kill the process from inside:
