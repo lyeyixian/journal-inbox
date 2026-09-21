@@ -1,0 +1,10 @@
+# Layered over compose.yaml by test/smoke/smoke.sh. Swaps the real env, port and
+# repo mounts for throwaway ones so the smoke test never touches production state.
+services:
+  journal-inbox:
+    env_file: !override
+      - test/smoke/smoke.env
+    ports: !override
+      - "127.0.0.1:${SMOKE_PORT}:8080"
+    volumes: !override
+      - data:/data

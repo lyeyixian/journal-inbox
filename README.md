@@ -21,6 +21,6 @@ The process reads config from env through the zod schema in `src/infrastructure/
 ## More
 
 - [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for the home server and the Tailscale Service
-- [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for the devcontainer and the commands
+- [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for the devcontainer, the commands and the test layers
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for layers, ports, stack, storage and assumptions
 - [docs/DOMAIN_LANGUAGE.md](docs/DOMAIN_LANGUAGE.md) for the words everything uses

@@ -16,14 +16,14 @@ flowchart LR
 
 | Layer | Holds | May import |
 | --- | --- | --- |
-| `src/domain` | Entry, Thought, Slot, Rule, Prompt, Day, Pause as plain types, plus pure functions such as "given this event, this day and this time, which slot fires". Day state is a fold over the day's events and is never stored separately. | Nothing. No packages, no Node built-ins. |
+| `src/domain` | Entry, Thought, Slot, Rule, Prompt, Day, Pause as plain types, plus pure functions such as "given this event, this day and this time, which slot fires". The prompt table is `SLOTS` in `slot.ts` and `RULES` in `rule.ts`. Day state is a fold over the day's events and is never stored separately. | Nothing. No packages, no Node built-ins. |
 | `src/application` | The use cases and the port interfaces they depend on. | Domain. |
 | `src/infrastructure` | One adapter per port, plus the env config loader. | Application and domain. |
 | `src/entrypoints` | The Hono server, the worker loop and the sort cli. `main.ts` is the only file that knows which adapter fills which port. | Everything. |
 
 ## Use cases and ports
 
-Use cases live in application and reach the outside world only through ports. Each port has one adapter in infrastructure, and one fake in the test harness. Solid arrows are what a use case depends on. Dotted lines pair a port with its adapter. None of the use cases exist yet, so the arrows are a reading of the tickets, and the real imports win when they disagree.
+Use cases live in application and reach the outside world only through ports. Each port has one adapter in infrastructure, and one fake in `test/harness/fakes.ts`. The acceptance suite runs the use cases against those fakes alone, see [DEVELOPMENT.md](DEVELOPMENT.md). Solid arrows are what a use case depends on. Dotted lines pair a port with its adapter. HandleEvent and SendPrompt exist. The rest are a reading of the tickets, and the real imports win when they disagree.
 
 ```mermaid
 flowchart LR
