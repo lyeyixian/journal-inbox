@@ -15,7 +15,10 @@
     "typecheck": "tsc --noEmit",
     "lint": "biome lint .",
     "format": "biome check --write .",
-    "test": "vitest run",
+    "test": "timeout 10 vitest run --project unit --project acceptance",
+    "test:contract": "node --env-file-if-exists=.env node_modules/vitest/vitest.mjs run --project contract",
+    "test:smoke": "test/smoke/smoke.sh",
+    "eval": "node eval/score.ts",
     "check": "biome check . && pnpm typecheck && pnpm test"
   },
   "dependencies": {
