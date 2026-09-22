@@ -16,6 +16,7 @@ import type { Day } from "../../src/domain/day.ts";
 import { dayOf } from "../../src/domain/day.ts";
 import type { Entry } from "../../src/domain/entry.ts";
 import type { Event } from "../../src/domain/event.ts";
+import { renderEntry } from "../../src/domain/raw-daily-file.ts";
 import type { Thought } from "../../src/domain/thought.ts";
 
 /** Parses a Singapore wall-clock time such as `2026-09-22 12:50`. */
@@ -80,21 +81,8 @@ export class FakeEntryStore implements EntryStore {
   async readDay(day: Day): Promise<string> {
     return this.entries
       .filter((entry) => dayOf(entry.receivedAt) === day)
-      .map(lineFor)
-      .join("\n");
-  }
-}
-
-function lineFor(entry: Entry): string {
-  switch (entry.kind) {
-    case "text":
-      return entry.text;
-    case "audio":
-      return entry.transcript;
-    case "link":
-      return entry.text === undefined
-        ? entry.url
-        : `${entry.text} ${entry.url}`;
+      .map(renderEntry)
+      .join("");
   }
 }
 

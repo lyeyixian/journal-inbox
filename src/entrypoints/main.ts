@@ -1,13 +1,17 @@
 import { serve } from "@hono/node-server";
+import { Bot } from "grammy";
 import { createHandleEvent } from "../application/handle-event.ts";
+import { createRecordEntry } from "../application/record-entry.ts";
 import { createSendPrompt } from "../application/send-prompt.ts";
 import { SystemClock } from "../infrastructure/clock/system-clock.ts";
 import {
   ConfigError,
   loadConfig,
 } from "../infrastructure/config/env-config.ts";
+import { FileEntryStore } from "../infrastructure/entry-store/file-entry-store.ts";
 import { FileEventLog } from "../infrastructure/event-log/file-event-log.ts";
-import { ConsoleMessageChannel } from "../infrastructure/message-channel/console-message-channel.ts";
+import { createTelegramGateway } from "../infrastructure/telegram/telegram-gateway.ts";
+import { TelegramMessageChannel } from "../infrastructure/telegram/telegram-message-channel.ts";
 import { createApp } from "./api/app.ts";
 import { startWorker } from "./worker/worker.ts";
 
@@ -15,13 +19,28 @@ import { startWorker } from "./worker/worker.ts";
 function main(): void {
   const config = loadConfig(process.env);
   const clock = new SystemClock();
+  const entryStore = new FileEntryStore(config.DATA_DIR);
   const eventLog = new FileEventLog(config.DATA_DIR);
-  const messageChannel = new ConsoleMessageChannel();
+  const bot = new Bot(config.TELEGRAM_BOT_TOKEN, {
+    client: { apiRoot: config.TELEGRAM_API_ROOT },
+  });
+  const messageChannel = new TelegramMessageChannel(
+    bot,
+    config.TELEGRAM_OWNER_ID,
+  );
 
   const sendPrompt = createSendPrompt({ clock, messageChannel, eventLog });
   const handleEvent = createHandleEvent({ clock, eventLog, sendPrompt });
+  const recordEntry = createRecordEntry({
+    clock,
+    entryStore,
+    eventLog,
+    ownerId: config.TELEGRAM_OWNER_ID,
+  });
 
-  const worker = startWorker();
+  const worker = startWorker({
+    telegram: createTelegramGateway({ bot, recordEntry }),
+  });
   const server = serve(
     {
       fetch: createApp({
@@ -36,8 +55,10 @@ function main(): void {
   );
 
   const shutdown = () => {
-    worker.stop();
-    server.close(() => process.exit(0));
+    void Promise.all([
+      worker.stop(),
+      new Promise<void>((resolve) => server.close(() => resolve())),
+    ]).then(() => process.exit(0));
   };
   process.on("SIGTERM", shutdown);
   process.on("SIGINT", shutdown);

@@ -16,7 +16,7 @@ Compose publishes the port on `127.0.0.1` only, so nothing on the LAN or the int
 
 ## Config
 
-The process reads config from env through the zod schema in `src/infrastructure/config/env-config.ts`. It prints every missing value and exits with code 1 if any are absent. `.env.example` lists them all.
+The process reads config from env through the zod schema in `src/infrastructure/config/env-config.ts`. It prints every missing value and exits with code 1 if any are absent. `.env.example` lists them all, and [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) says where the Telegram ones come from.
 
 ## More
 

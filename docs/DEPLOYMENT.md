@@ -2,6 +2,8 @@
 
 ## First time
 
+Two values in `.env` come from Telegram. Ask [@BotFather](https://t.me/BotFather) for a new bot and copy its token into `TELEGRAM_BOT_TOKEN`. Ask [@userinfobot](https://t.me/userinfobot) for your own id and put it in `TELEGRAM_OWNER_ID`. The bot answers that account and ignores every other one. Open a chat with the bot and press Start once, or it cannot message you.
+
 The server needs Docker, your user in the `docker` group, and an SSH key registered on GitHub so it can clone the private repos. Clone `journal-inbox`, `experience-vault` and `journal` side by side under `~/repo`. Write `.env` with the real values. Then run the three commands under "Run it" in the [README](../README.md).
 
 Tailscale then publishes the container on the tailnet as a Tailscale Service with HTTPS. The order matters:
