@@ -7,6 +7,8 @@ const configSchema = z.object({
   JOURNAL_DIR: z.string().min(1),
   TELEGRAM_BOT_TOKEN: z.string().min(1),
   TELEGRAM_OWNER_ID: z.coerce.number().int().positive(),
+  // Where grammY sends Bot API calls. Only the smoke test points it elsewhere.
+  TELEGRAM_API_ROOT: z.url().default("https://api.telegram.org"),
   EVENT_INTAKE_SECRET: z.string().min(1),
   GROQ_API_KEY: z.string().min(1),
   LINEAR_API_KEY: z.string().min(1),

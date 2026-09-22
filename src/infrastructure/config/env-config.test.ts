@@ -21,6 +21,16 @@ describe("loadConfig", () => {
     });
   });
 
+  it("points at Telegram unless told otherwise", () => {
+    expect(loadConfig(complete).TELEGRAM_API_ROOT).toBe(
+      "https://api.telegram.org",
+    );
+    expect(
+      loadConfig({ ...complete, TELEGRAM_API_ROOT: "http://127.0.0.1:9" })
+        .TELEGRAM_API_ROOT,
+    ).toBe("http://127.0.0.1:9");
+  });
+
   it.each(Object.keys(complete))("refuses to load without %s", (key) => {
     const env = { ...complete, [key]: undefined };
     expect(() => loadConfig(env)).toThrow(ConfigError);

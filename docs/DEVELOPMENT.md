@@ -8,7 +8,7 @@ The scripts are in `package.json`. `pnpm check` runs format, lint, typecheck and
 
 ## Tests
 
-`pnpm test` is the trusted suite. If it passes, the app works. It runs in under ten seconds, and the script kills it if it does not. It never opens a socket, never touches a real file and never reads the real clock, so it is safe to run anywhere.
+`pnpm test` is the trusted suite. If it passes, the app works. It runs in under ten seconds, and the script kills it if it does not. It never opens a socket and never reads the real clock, and the only files it touches are in a temp folder the file adapters' unit tests make and remove, so it is safe to run anywhere.
 
 | Command | What runs | When |
 | --- | --- | --- |
@@ -33,6 +33,6 @@ await world.handleEvent("airpods_on");
 expect(world.promptsSent).toEqual(["how's the morning going?"]);
 ```
 
-Copy `test/acceptance/office-day-prompts.test.ts`. If a scenario seems to need a new fake or new setup, the world is missing something every scenario should have, so add it there.
+`world.ownerSends(text)` and `world.strangerSends(text)` stand in for Telegram messages. Copy `test/acceptance/office-day-prompts.test.ts` or `test/acceptance/capture-entries.test.ts`. If a scenario seems to need a new fake or new setup, the world is missing something every scenario should have, so add it there.
 
 `test/harness/no-network.ts` loads before every acceptance test and makes `fetch` and socket connects throw. A real adapter reaching into the suite fails loudly instead of quietly hitting the network.

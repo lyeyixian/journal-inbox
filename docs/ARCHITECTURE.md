@@ -23,7 +23,7 @@ flowchart LR
 
 ## Use cases and ports
 
-Use cases live in application and reach the outside world only through ports. Each port has one adapter in infrastructure, and one fake in `test/harness/fakes.ts`. The acceptance suite runs the use cases against those fakes alone, see [DEVELOPMENT.md](DEVELOPMENT.md). Solid arrows are what a use case depends on. Dotted lines pair a port with its adapter. HandleEvent and SendPrompt exist. The rest are a reading of the tickets, and the real imports win when they disagree.
+Use cases live in application and reach the outside world only through ports. Each port has one adapter in infrastructure, and one fake in `test/harness/fakes.ts`. The acceptance suite runs the use cases against those fakes alone, see [DEVELOPMENT.md](DEVELOPMENT.md). Solid arrows are what a use case depends on. Dotted lines pair a port with its adapter. RecordEntry, HandleEvent and SendPrompt exist. The rest are a reading of the tickets, and the real imports win when they disagree.
 
 ```mermaid
 flowchart LR
@@ -56,7 +56,7 @@ flowchart LR
     Linear[Linear SDK]
     Journal[journal repo]
   end
-  RE --> Transcriber & EntryStore & Clock
+  RE --> EntryStore & EventLog & Clock
   HE --> EventLog & Clock
   SP --> MessageChannel & EventLog & Clock
   SD --> EntryStore & ThoughtSplitter & VaultWriter & LinearWriter & JournalWriter
@@ -74,6 +74,8 @@ flowchart LR
 ```
 
 All nine ports are in `src/application/ports.ts`.
+
+Telegram is also the way in. `src/infrastructure/telegram/telegram-gateway.ts` is not behind a port: it listens for messages with grammY and calls RecordEntry, and the worker starts and stops it. Ports are for what use cases call. The gateway calls a use case, like the api does for events.
 
 | Port | What it does |
 | --- | --- |
@@ -161,7 +163,20 @@ Plain files in a Docker volume, no database.
     sort.json           the sort record, written by the sort run
 ```
 
-The bot logs its own actions, such as prompt sent and prompt deleted, as events too. A restart loses nothing because day state is rebuilt from the log. SQLite is the upgrade path if cross-day queries get painful, and only infrastructure would change.
+`entries.md` is the permanent record and is only ever appended to. Each entry is a heading with the Singapore wall-clock time it arrived and, once prompts land, the slot it answers, then the message.
+
+```
+## 09:20
+
+standup went long again
+
+## 21:05 · after_shower
+
+Never Gonna Give You Up
+https://youtu.be/dQw4w9WgXcQ
+```
+
+The bot logs its own actions, such as entry recorded, prompt sent and prompt deleted, as events too. A restart loses nothing because day state is rebuilt from the log. SQLite is the upgrade path if cross-day queries get painful, and only infrastructure would change.
 
 ## Assumptions
 
