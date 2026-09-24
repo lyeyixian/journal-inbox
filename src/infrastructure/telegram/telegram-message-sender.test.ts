@@ -1,8 +1,8 @@
 import { Bot } from "grammy";
 import { describe, expect, it } from "vitest";
-import { TelegramMessageChannel } from "./telegram-message-channel.ts";
+import { TelegramMessageSender } from "./telegram-message-sender.ts";
 
-describe("TelegramMessageChannel", () => {
+describe("TelegramMessageSender", () => {
   it("sends to the owner's chat and returns the message id, and deletes by it", async () => {
     const bot = new Bot("token");
     const calls: { method: string; payload: unknown }[] = [];
@@ -13,10 +13,10 @@ describe("TelegramMessageChannel", () => {
         ? ({ ok: true, result: { message_id: 99 } } as never)
         : ({ ok: true, result: true } as never);
     });
-    const channel = new TelegramMessageChannel(bot, 12345);
+    const sender = new TelegramMessageSender(bot, 12345);
 
-    const messageId = await channel.send("how's the morning going?");
-    await channel.delete(messageId);
+    const messageId = await sender.send("how's the morning going?");
+    await sender.delete(messageId);
 
     expect(messageId).toBe("99");
     expect(calls).toEqual([

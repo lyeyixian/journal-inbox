@@ -1,7 +1,7 @@
 import { entryFrom } from "../domain/entry.ts";
 import type { Clock, EntryStore, EventLog } from "./ports.ts";
 
-/** A message as the gateway hands it over: who sent it and what it said. */
+/** A message as the listener hands it over: who sent it and what it said. */
 export type IncomingMessage = {
   senderId: number;
   text: string;

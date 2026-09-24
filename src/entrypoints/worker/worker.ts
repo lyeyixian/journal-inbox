@@ -1,8 +1,8 @@
-import type { TelegramGateway } from "../../infrastructure/telegram/telegram-gateway.ts";
+import type { TelegramListener } from "../../infrastructure/telegram/telegram-listener.ts";
 
 // Home of the grammY polling loop, and later the clock-driven slots, the
 // before-bed recheck timer and the nightly sort. Each arrives with its own ticket.
-export function startWorker(deps: { telegram: TelegramGateway }): {
+export function startWorker(deps: { telegram: TelegramListener }): {
   stop(): Promise<void>;
 } {
   // grammY retries network errors on its own, so a rejection means a bad token

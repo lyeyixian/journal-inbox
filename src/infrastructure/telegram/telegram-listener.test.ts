@@ -1,6 +1,6 @@
 import { Bot } from "grammy";
 import { describe, expect, it, vi } from "vitest";
-import { createTelegramGateway } from "./telegram-gateway.ts";
+import { createTelegramListener } from "./telegram-listener.ts";
 
 // Passing botInfo skips getMe, so the bot never talks to Telegram.
 const botInfo = {
@@ -22,11 +22,11 @@ const botInfo = {
 const from = { id: 12345, is_bot: false, first_name: "Owner" };
 const chat = { id: 12345, type: "private" as const, first_name: "Owner" };
 
-describe("telegram gateway", () => {
+describe("telegram listener", () => {
   it("hands a text message to RecordEntry with who sent it", async () => {
     const bot = new Bot("token", { botInfo });
     const recordEntry = vi.fn(async () => {});
-    createTelegramGateway({ bot, recordEntry });
+    createTelegramListener({ bot, recordEntry });
 
     await bot.handleUpdate({
       update_id: 1,
@@ -48,7 +48,7 @@ describe("telegram gateway", () => {
   it("ignores a text message in a group, even from the owner", async () => {
     const bot = new Bot("token", { botInfo });
     const recordEntry = vi.fn(async () => {});
-    createTelegramGateway({ bot, recordEntry });
+    createTelegramListener({ bot, recordEntry });
 
     await bot.handleUpdate({
       update_id: 3,
@@ -67,7 +67,7 @@ describe("telegram gateway", () => {
   it("ignores a message with no text", async () => {
     const bot = new Bot("token", { botInfo });
     const recordEntry = vi.fn(async () => {});
-    createTelegramGateway({ bot, recordEntry });
+    createTelegramListener({ bot, recordEntry });
 
     await bot.handleUpdate({
       update_id: 2,

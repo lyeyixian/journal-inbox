@@ -7,7 +7,7 @@ import type {
   EventLog,
   JournalWriter,
   LinearWriter,
-  MessageChannel,
+  MessageSender,
   ThoughtSplitter,
   Transcriber,
   VaultWriter,
@@ -45,7 +45,7 @@ export class FakeClock implements Clock {
   }
 }
 
-export class FakeMessageChannel implements MessageChannel {
+export class FakeMessageSender implements MessageSender {
   readonly sent: string[] = [];
   readonly deleted: string[] = [];
 

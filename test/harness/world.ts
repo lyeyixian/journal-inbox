@@ -10,7 +10,7 @@ import {
   FakeEventLog,
   FakeJournalWriter,
   FakeLinearWriter,
-  FakeMessageChannel,
+  FakeMessageSender,
   FakeThoughtSplitter,
   FakeTranscriber,
   FakeVaultWriter,
@@ -21,7 +21,7 @@ export const OWNER_ID = 1;
 
 export function createWorld() {
   const clock = new FakeClock();
-  const messageChannel = new FakeMessageChannel();
+  const messageSender = new FakeMessageSender();
   const transcriber = new FakeTranscriber();
   const entryStore = new FakeEntryStore();
   const eventLog = new FakeEventLog();
@@ -30,7 +30,7 @@ export function createWorld() {
   const linear = new FakeLinearWriter();
   const journal = new FakeJournalWriter();
 
-  const sendPrompt = createSendPrompt({ clock, messageChannel, eventLog });
+  const sendPrompt = createSendPrompt({ clock, messageSender, eventLog });
   const handleEvent = createHandleEvent({ clock, eventLog, sendPrompt });
   const recordEntry = createRecordEntry({
     clock,
@@ -41,7 +41,7 @@ export function createWorld() {
 
   return {
     clock,
-    messageChannel,
+    messageSender,
     transcriber,
     entryStore,
     eventLog,
@@ -62,7 +62,7 @@ export function createWorld() {
     },
     /** The prompts Telegram would have shown, in order. */
     get promptsSent(): string[] {
-      return messageChannel.sent;
+      return messageSender.sent;
     },
   };
 }
