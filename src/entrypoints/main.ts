@@ -10,8 +10,8 @@ import {
 } from "../infrastructure/config/env-config.ts";
 import { FileEntryStore } from "../infrastructure/entry-store/file-entry-store.ts";
 import { FileEventLog } from "../infrastructure/event-log/file-event-log.ts";
-import { createTelegramGateway } from "../infrastructure/telegram/telegram-gateway.ts";
-import { TelegramMessageChannel } from "../infrastructure/telegram/telegram-message-channel.ts";
+import { createTelegramListener } from "../infrastructure/telegram/telegram-listener.ts";
+import { TelegramMessageSender } from "../infrastructure/telegram/telegram-message-sender.ts";
 import { createApp } from "./api/app.ts";
 import { startWorker } from "./worker/worker.ts";
 
@@ -24,12 +24,12 @@ function main(): void {
   const bot = new Bot(config.TELEGRAM_BOT_TOKEN, {
     client: { apiRoot: config.TELEGRAM_API_ROOT },
   });
-  const messageChannel = new TelegramMessageChannel(
+  const messageSender = new TelegramMessageSender(
     bot,
     config.TELEGRAM_OWNER_ID,
   );
 
-  const sendPrompt = createSendPrompt({ clock, messageChannel, eventLog });
+  const sendPrompt = createSendPrompt({ clock, messageSender, eventLog });
   const handleEvent = createHandleEvent({ clock, eventLog, sendPrompt });
   const recordEntry = createRecordEntry({
     clock,
@@ -39,7 +39,7 @@ function main(): void {
   });
 
   const worker = startWorker({
-    telegram: createTelegramGateway({ bot, recordEntry }),
+    telegram: createTelegramListener({ bot, recordEntry }),
   });
   const server = serve(
     {

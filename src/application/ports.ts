@@ -10,7 +10,7 @@ export interface Clock {
   now(): Date;
 }
 
-export interface MessageChannel {
+export interface MessageSender {
   /** Returns the id of the sent message so it can be deleted later. */
   send(text: string): Promise<string>;
   delete(messageId: string): Promise<void>;

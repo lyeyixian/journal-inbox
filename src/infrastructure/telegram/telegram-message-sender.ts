@@ -1,8 +1,8 @@
 import type { Bot } from "grammy";
-import type { MessageChannel } from "../../application/ports.ts";
+import type { MessageSender } from "../../application/ports.ts";
 
 /** Sends and deletes messages in the owner's private chat, whose id is the owner's id. */
-export class TelegramMessageChannel implements MessageChannel {
+export class TelegramMessageSender implements MessageSender {
   private readonly bot: Bot;
   private readonly chatId: number;
 

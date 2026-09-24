@@ -1,7 +1,7 @@
 import type { Bot } from "grammy";
 import type { RecordEntry } from "../../application/record-entry.ts";
 
-export type TelegramGateway = {
+export type TelegramListener = {
   /** Long polls Telegram until stopped. Rejects only on a bad token or a second poller. */
   start(): Promise<void>;
   stop(): Promise<void>;
@@ -12,10 +12,10 @@ export type TelegramGateway = {
  * a shared link, goes to RecordEntry with the sender's id. RecordEntry decides
  * who is the owner. Groups are ignored so adding the bot to one records nothing.
  */
-export function createTelegramGateway(deps: {
+export function createTelegramListener(deps: {
   bot: Bot;
   recordEntry: RecordEntry;
-}): TelegramGateway {
+}): TelegramListener {
   const { bot } = deps;
 
   bot.chatType("private").on("message:text", async (ctx) => {

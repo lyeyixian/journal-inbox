@@ -37,7 +37,7 @@ flowchart LR
   end
   subgraph ports
     Clock
-    MessageChannel
+    MessageSender
     Transcriber
     EntryStore
     EventLog
@@ -58,12 +58,12 @@ flowchart LR
   end
   RE --> EntryStore & EventLog & Clock
   HE --> EventLog & Clock
-  SP --> MessageChannel & EventLog & Clock
+  SP --> MessageSender & EventLog & Clock
   SD --> EntryStore & ThoughtSplitter & VaultWriter & LinearWriter & JournalWriter
-  AC --> MessageChannel & VaultWriter & LinearWriter & JournalWriter
-  SR --> MessageChannel
+  AC --> MessageSender & VaultWriter & LinearWriter & JournalWriter
+  SR --> MessageSender
   Clock -.- SystemClock
-  MessageChannel -.- grammY
+  MessageSender -.- grammY
   Transcriber -.- Groq
   EntryStore -.- FS
   EventLog -.- FS
@@ -75,12 +75,12 @@ flowchart LR
 
 All nine ports are in `src/application/ports.ts`.
 
-Telegram is also the way in. `src/infrastructure/telegram/telegram-gateway.ts` is not behind a port: it listens for messages with grammY and calls RecordEntry, and the worker starts and stops it. Ports are for what use cases call. The gateway calls a use case, like the api does for events.
+Telegram is also the way in. `src/infrastructure/telegram/telegram-listener.ts` is not behind a port: it listens for messages with grammY and calls RecordEntry, and the worker starts and stops it. Ports are for what use cases call. The listener calls a use case, like the api does for events.
 
 | Port | What it does |
 | --- | --- |
 | Clock | Says what time it is. |
-| MessageChannel | Sends and deletes Telegram messages. |
+| MessageSender | Sends and deletes Telegram messages. |
 | Transcriber | Turns an OGG file into a transcript. |
 | EntryStore | Appends entries to the raw daily file and reads it back. |
 | EventLog | Appends events to the day's log and reads them back. |
