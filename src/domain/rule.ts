@@ -22,6 +22,14 @@ export const RULES: readonly Rule[] = [
     officeDayOnly: true,
     silencedByPause: true,
   },
+  {
+    eventName: "mac_unlocked",
+    slotName: "after_shower",
+    window: { from: "20:30", to: "23:59" },
+    oncePerDay: true,
+    officeDayOnly: false,
+    silencedByPause: false,
+  },
 ];
 
 export type RuleContext = {

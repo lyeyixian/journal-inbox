@@ -1,9 +1,18 @@
 // Every acceptance scenario starts from a world: all nine ports filled with fakes,
 // a clock it can set, and every use case wired. A new scenario needs nothing else.
 
-import { createHandleEvent } from "../../src/application/handle-event.ts";
-import { createRecordEntry } from "../../src/application/record-entry.ts";
-import { createSendPrompt } from "../../src/application/send-prompt.ts";
+import {
+  createHandleEvent,
+  type HandleEvent,
+} from "../../src/application/handle-event.ts";
+import {
+  createRecordEntry,
+  type RecordEntry,
+} from "../../src/application/record-entry.ts";
+import {
+  createSendPrompt,
+  type SendPrompt,
+} from "../../src/application/send-prompt.ts";
 import {
   FakeClock,
   FakeEntryStore,
@@ -30,14 +39,26 @@ export function createWorld() {
   const linear = new FakeLinearWriter();
   const journal = new FakeJournalWriter();
 
-  const sendPrompt = createSendPrompt({ clock, messageSender, eventLog });
-  const handleEvent = createHandleEvent({ clock, eventLog, sendPrompt });
-  const recordEntry = createRecordEntry({
-    clock,
-    entryStore,
-    eventLog,
-    ownerId: OWNER_ID,
-  });
+  // Use cases hold no state of their own. Wiring them again over the same fakes
+  // is what a container restart does to the process, with the data volume kept.
+  function wire() {
+    const sendPrompt = createSendPrompt({ clock, messageSender, eventLog });
+    return {
+      sendPrompt,
+      handleEvent: createHandleEvent({ clock, eventLog, sendPrompt }),
+      recordEntry: createRecordEntry({
+        clock,
+        entryStore,
+        eventLog,
+        ownerId: OWNER_ID,
+      }),
+    };
+  }
+  let useCases = wire();
+  const handleEvent: HandleEvent = (eventName) =>
+    useCases.handleEvent(eventName);
+  const sendPrompt: SendPrompt = (slotName) => useCases.sendPrompt(slotName);
+  const recordEntry: RecordEntry = (message) => useCases.recordEntry(message);
 
   return {
     clock,
@@ -52,6 +73,10 @@ export function createWorld() {
     handleEvent,
     sendPrompt,
     recordEntry,
+    /** Starts the process again. Only what the fakes hold survives, as only the data volume does. */
+    restart(): void {
+      useCases = wire();
+    },
     /** A message from the owner's Telegram account. */
     ownerSends(text: string): Promise<void> {
       return recordEntry({ senderId: OWNER_ID, text });

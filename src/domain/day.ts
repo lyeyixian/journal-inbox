@@ -19,21 +19,46 @@ export function wallClockOf(instant: Date): string {
   return singaporeTime(instant).toISOString().slice(11, 16);
 }
 
+/** A prompt still waiting in the chat for its reply. */
+export type OpenPrompt = {
+  slotName: string;
+  messageId: string;
+};
+
 /** What the day's events say about the day. Rebuilt from the log whenever it is needed. */
 export type DayState = {
   officeDay: boolean;
   /** Slots that already sent a prompt today. */
   firedSlots: ReadonlySet<string>;
+  /** The prompt sent last, until an entry answers it or the bot deletes it. */
+  openPrompt?: OpenPrompt;
 };
 
 export function foldDay(events: readonly Event[]): DayState {
   const firedSlots = new Set<string>();
   let officeDay = false;
+  let openPrompt: OpenPrompt | undefined;
   for (const event of events) {
-    if (event.name === "arrived_office") officeDay = true;
-    if (event.name === "prompt_sent" && event.slotName !== undefined) {
-      firedSlots.add(event.slotName);
+    switch (event.name) {
+      case "arrived_office":
+        officeDay = true;
+        break;
+      case "prompt_sent":
+        if (event.slotName === undefined) break;
+        firedSlots.add(event.slotName);
+        openPrompt =
+          event.messageId === undefined
+            ? undefined
+            : { slotName: event.slotName, messageId: event.messageId };
+        break;
+      // The first entry after a prompt is its reply, so the prompt closes.
+      case "entry_recorded":
+      case "prompt_deleted":
+        openPrompt = undefined;
+        break;
     }
   }
-  return { officeDay, firedSlots };
+  return openPrompt === undefined
+    ? { officeDay, firedSlots }
+    : { officeDay, firedSlots, openPrompt };
 }

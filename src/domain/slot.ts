@@ -7,6 +7,10 @@ export type Slot = {
 // The prompt table. Feature tickets add rows here, never code paths.
 export const SLOTS: readonly Slot[] = [
   { name: "gym", promptText: "how's the morning going?" },
+  {
+    name: "after_shower",
+    promptText: "anything from today, or what are you on tonight?",
+  },
 ];
 
 export function slotNamed(name: string): Slot {

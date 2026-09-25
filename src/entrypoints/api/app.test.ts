@@ -54,6 +54,23 @@ describe("POST /events", () => {
     expect(handleEvent).not.toHaveBeenCalled();
   });
 
+  it("refuses without the shared secret before reading the body", async () => {
+    const response = await app().request(post({ name: "Mac Unlocked" }));
+
+    expect(response.status).toBe(401);
+  });
+
+  it("refuses the wrong shared secret", async () => {
+    const handleEvent = vi.fn(async () => {});
+
+    const response = await app(handleEvent).request(
+      post({ name: "mac_unlocked" }, "guess"),
+    );
+
+    expect(response.status).toBe(401);
+    expect(handleEvent).not.toHaveBeenCalled();
+  });
+
   it("refuses an event name that is not snake_case", async () => {
     const response = await app().request(
       post({ name: "Mac Unlocked" }, "s3cret"),
