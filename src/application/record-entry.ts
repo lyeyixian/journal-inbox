@@ -1,4 +1,4 @@
-import { dayOf, foldDay } from "../domain/day.ts";
+import { dayOf, dayStateFrom } from "../domain/day.ts";
 import { entryFrom } from "../domain/entry.ts";
 import type { Clock, EntryStore, EventLog } from "./ports.ts";
 
@@ -24,8 +24,9 @@ export function createRecordEntry(deps: {
   return async (message) => {
     if (message.senderId !== deps.ownerId) return;
     const receivedAt = deps.clock.now();
-    const slotName = foldDay(await deps.eventLog.readDay(dayOf(receivedAt)))
-      .openPrompt?.slotName;
+    const slotName = dayStateFrom(
+      await deps.eventLog.readDay(dayOf(receivedAt)),
+    ).openPrompt?.slotName;
     const entry = entryFrom(message.text, receivedAt);
     await deps.entryStore.append(
       slotName === undefined ? entry : { ...entry, slotName },

@@ -54,7 +54,7 @@ describe("POST /events", () => {
     expect(handleEvent).not.toHaveBeenCalled();
   });
 
-  it("refuses without the shared secret before reading the body", async () => {
+  it("checks the secret before the body, so a bad body without it gets 401, not 400", async () => {
     const response = await app().request(post({ name: "Mac Unlocked" }));
 
     expect(response.status).toBe(401);

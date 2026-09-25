@@ -1,4 +1,4 @@
-import { dayOf, foldDay } from "../domain/day.ts";
+import { dayOf, dayStateFrom } from "../domain/day.ts";
 import { slotToFire } from "../domain/rule.ts";
 import type { Clock, EventLog } from "./ports.ts";
 import type { SendPrompt } from "./send-prompt.ts";
@@ -21,7 +21,7 @@ export function createHandleEvent(deps: {
     const event = { name: eventName, at: deps.clock.now() };
     await deps.eventLog.append(event);
 
-    const day = foldDay(await deps.eventLog.readDay(dayOf(event.at)));
+    const day = dayStateFrom(await deps.eventLog.readDay(dayOf(event.at)));
     // Pause arrives with ENG-64. Until then nothing is ever paused.
     const slotName = slotToFire(event, { day, paused: false });
     if (slotName !== undefined) await deps.sendPrompt(slotName);

@@ -34,7 +34,11 @@ export type DayState = {
   openPrompt?: OpenPrompt;
 };
 
-export function foldDay(events: readonly Event[]): DayState {
+/**
+ * Replays the day's events, oldest first, and returns what they add up to.
+ * Call it with everything logged so far today to get the day as it stands now.
+ */
+export function dayStateFrom(events: readonly Event[]): DayState {
   const firedSlots = new Set<string>();
   let officeDay = false;
   let openPrompt: OpenPrompt | undefined;

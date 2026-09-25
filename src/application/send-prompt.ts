@@ -1,5 +1,5 @@
-import { dayOf, foldDay } from "../domain/day.ts";
-import { slotNamed } from "../domain/slot.ts";
+import { dayOf, dayStateFrom } from "../domain/day.ts";
+import { promptTextOf } from "../domain/slot.ts";
 import type { Clock, EventLog, MessageSender } from "./ports.ts";
 
 export type SendPrompt = (slotName: string) => Promise<void>;
@@ -16,7 +16,9 @@ export function createSendPrompt(deps: {
 }): SendPrompt {
   return async (slotName) => {
     const now = deps.clock.now();
-    const { openPrompt } = foldDay(await deps.eventLog.readDay(dayOf(now)));
+    const { openPrompt } = dayStateFrom(
+      await deps.eventLog.readDay(dayOf(now)),
+    );
     if (openPrompt !== undefined) {
       await deps.messageSender.delete(openPrompt.messageId);
       await deps.eventLog.append({
@@ -26,9 +28,7 @@ export function createSendPrompt(deps: {
       });
     }
 
-    const messageId = await deps.messageSender.send(
-      slotNamed(slotName).promptText,
-    );
+    const messageId = await deps.messageSender.send(promptTextOf(slotName));
     await deps.eventLog.append({
       name: "prompt_sent",
       at: deps.clock.now(),
