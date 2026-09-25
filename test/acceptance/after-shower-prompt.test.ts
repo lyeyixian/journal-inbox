@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { singapore } from "../harness/fakes.ts";
 import { createWorld } from "../harness/world.ts";
 
 // Scenarios read as given, when, then. Times are Singapore wall clock.
@@ -159,7 +160,7 @@ describe("one prompt open at a time", () => {
     expect(world.messageSender.deleted).toEqual([gymMessageId]);
     expect(world.eventLog.events).toContainEqual({
       name: "prompt_deleted",
-      at: new Date("2026-09-22T13:00:00Z"),
+      at: singapore("2026-09-22 21:00"),
       slotName: "gym",
       messageId: gymMessageId,
     });
