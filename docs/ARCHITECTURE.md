@@ -176,7 +176,7 @@ Never Gonna Give You Up
 https://youtu.be/dQw4w9WgXcQ
 ```
 
-The bot logs its own actions, such as entry recorded, prompt sent and prompt deleted, as events too. A restart loses nothing because day state is rebuilt from the log. The fold gives the slots that already fired today and the prompt still open. A prompt stays open until the next entry, which answers it and carries its slot, or until the next prompt, which deletes it from the chat first. SQLite is the upgrade path if cross-day queries get painful, and only infrastructure would change.
+The bot logs its own actions, such as entry recorded, prompt sent and prompt deleted, as events too. A restart loses nothing because day state is rebuilt from the log. `dayStateFrom` in `day.ts` replays the log and gives the slots that already fired today and the prompt still open. A prompt stays open until the next entry, which answers it and carries its slot, or until the next prompt, which deletes it from the chat first. SQLite is the upgrade path if cross-day queries get painful, and only infrastructure would change.
 
 ## Assumptions
 

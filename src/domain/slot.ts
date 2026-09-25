@@ -13,8 +13,9 @@ export const SLOTS: readonly Slot[] = [
   },
 ];
 
-export function slotNamed(name: string): Slot {
-  const slot = SLOTS.find((candidate) => candidate.name === name);
-  if (slot === undefined) throw new Error(`No slot named ${name}`);
-  return slot;
+/** The fixed text the bot sends for a slot. */
+export function promptTextOf(slotName: string): string {
+  const slot = SLOTS.find((candidate) => candidate.name === slotName);
+  if (slot === undefined) throw new Error(`No slot named ${slotName}`);
+  return slot.promptText;
 }

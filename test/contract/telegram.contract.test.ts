@@ -18,4 +18,15 @@ describe.skipIf(!token || !ownerId)("telegram adapter", () => {
     expect(messageId).toMatch(/^\d+$/);
     await expect(sender.delete(messageId)).resolves.toBeUndefined();
   });
+
+  it("treats deleting a message that is already gone as done", async () => {
+    const sender = new TelegramMessageSender(new Bot(token ?? ""), ownerId);
+    const messageId = await sender.send(
+      "contract test: this message deletes itself",
+    );
+    await sender.delete(messageId);
+
+    // The second delete gets Telegram's "message to delete not found".
+    await expect(sender.delete(messageId)).resolves.toBeUndefined();
+  });
 });
