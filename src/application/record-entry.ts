@@ -24,9 +24,8 @@ export function createRecordEntry(deps: {
   return async (message) => {
     if (message.senderId !== deps.ownerId) return;
     const receivedAt = deps.clock.now();
-    const slotName = dayStateFrom(
-      await deps.eventLog.readDay(dayOf(receivedAt)),
-    ).openPrompt?.slotName;
+    const slotName = dayStateFrom(await deps.eventLog.read(dayOf(receivedAt)))
+      .openPrompt?.slotName;
     const entry = entryFrom(message.text, receivedAt);
     await deps.entryStore.append(
       slotName === undefined ? entry : { ...entry, slotName },

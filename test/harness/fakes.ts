@@ -97,7 +97,7 @@ export class FakeEventLog implements EventLog {
     this.events.push(event);
   }
 
-  async readDay(day: Day): Promise<Event[]> {
+  async read(day: Day): Promise<Event[]> {
     return this.events.filter((event) => dayOf(event.at) === day);
   }
 }

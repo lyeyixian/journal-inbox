@@ -28,7 +28,7 @@ export interface EntryStore {
 
 export interface EventLog {
   append(event: Event): Promise<void>;
-  readDay(day: Day): Promise<Event[]>;
+  read(day: Day): Promise<Event[]>;
 }
 
 export interface ThoughtSplitter {
