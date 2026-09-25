@@ -108,7 +108,7 @@ describe("capturing an entry", () => {
     expect(await world.entryStore.readDay("2026-09-23")).toContain(
       "first thought of Wednesday",
     );
-    expect(await world.eventLog.readDay("2026-09-23")).toEqual([
+    expect(await world.eventLog.read("2026-09-23")).toEqual([
       { name: "entry_recorded", at: new Date("2026-09-22T16:01:00Z") },
     ]);
   });

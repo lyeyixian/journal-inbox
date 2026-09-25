@@ -16,9 +16,7 @@ export function createSendPrompt(deps: {
 }): SendPrompt {
   return async (slotName) => {
     const now = deps.clock.now();
-    const { openPrompt } = dayStateFrom(
-      await deps.eventLog.readDay(dayOf(now)),
-    );
+    const { openPrompt } = dayStateFrom(await deps.eventLog.read(dayOf(now)));
     if (openPrompt !== undefined) {
       await deps.messageSender.delete(openPrompt.messageId);
       await deps.eventLog.append({

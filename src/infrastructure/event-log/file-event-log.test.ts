@@ -26,11 +26,11 @@ describe("FileEventLog", () => {
     await log.append(monday);
     await log.append(tuesday);
 
-    expect(await log.readDay("2026-09-21")).toEqual([monday]);
-    expect(await log.readDay("2026-09-22")).toEqual([tuesday]);
+    expect(await log.read("2026-09-21")).toEqual([monday]);
+    expect(await log.read("2026-09-22")).toEqual([tuesday]);
   });
 
   it("reads an empty day as no events", async () => {
-    expect(await new FileEventLog(dir).readDay("2026-01-01")).toEqual([]);
+    expect(await new FileEventLog(dir).read("2026-01-01")).toEqual([]);
   });
 });

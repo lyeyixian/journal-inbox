@@ -18,7 +18,7 @@ export class FileEventLog implements EventLog {
     await appendFile(file, `${JSON.stringify(event)}\n`);
   }
 
-  async readDay(day: Day): Promise<Event[]> {
+  async read(day: Day): Promise<Event[]> {
     let text: string;
     try {
       text = await readFile(this.fileFor(day), "utf8");
