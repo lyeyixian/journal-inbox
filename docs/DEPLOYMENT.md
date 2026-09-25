@@ -22,6 +22,24 @@ The serve config lives in Tailscale, not in the repo, so a fresh server needs st
 curl https://journal-inbox.taila5aaaf.ts.net/health
 ```
 
+## The MacBook
+
+The MacBook tells the server when its screen unlocks, which is what sends the after-shower prompt. `devices/mac/unlock-watcher.swift` listens for the unlock and posts `mac_unlocked` to event intake. `devices/mac/install.sh` compiles it, writes a launchd agent that keeps it running, and loads the agent. It needs the Xcode command line tools for `swiftc`, and Tailscale connected.
+
+```sh
+devices/mac/install.sh     # asks for EVENT_INTAKE_SECRET from the server's .env
+tail -f ~/Library/Logs/journal-inbox-unlock-watcher.log
+```
+
+Lock and unlock the screen. The log should say `mac_unlocked answered 202`. Run the script again after changing the secret. To remove the agent:
+
+```sh
+launchctl bootout gui/$(id -u)/com.journal-inbox.unlock-watcher
+rm ~/Library/LaunchAgents/com.journal-inbox.unlock-watcher.plist
+```
+
+## Restarts
+
 `restart: unless-stopped` brings the container back after a crash or a reboot. It does not restart after `docker compose stop` or `kill`, because Docker treats those as you asking for it to stay down. To test the policy without a reboot, kill the process from inside:
 
 ```sh

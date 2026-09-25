@@ -19,16 +19,24 @@ export function createApp(deps: {
     c.json({ status: "ok", time: deps.clock.now().toISOString() }),
   );
 
-  // Event intake. Devices on the tailnet post here with the shared secret.
-  app.post("/events", zValidator("json", eventSchema), async (c) => {
-    if (c.req.header("x-event-secret") !== deps.eventIntakeSecret) {
-      return c.json({ error: "wrong or missing x-event-secret" }, 401);
-    }
-    const { name } = c.req.valid("json");
-    await deps.handleEvent(name);
-    console.log(`event ${name} logged`);
-    return c.json({ status: "logged", name }, 202);
-  });
+  // Event intake. Devices on the tailnet post here with the shared secret, which
+  // is checked before the body so a stranger learns nothing about the schema.
+  app.post(
+    "/events",
+    async (c, next) => {
+      if (c.req.header("x-event-secret") !== deps.eventIntakeSecret) {
+        return c.json({ error: "wrong or missing x-event-secret" }, 401);
+      }
+      await next();
+    },
+    zValidator("json", eventSchema),
+    async (c) => {
+      const { name } = c.req.valid("json");
+      await deps.handleEvent(name);
+      console.log(`event ${name} logged`);
+      return c.json({ status: "logged", name }, 202);
+    },
+  );
 
   return app;
 }

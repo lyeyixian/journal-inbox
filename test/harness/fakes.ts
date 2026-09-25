@@ -47,11 +47,15 @@ export class FakeClock implements Clock {
 
 export class FakeMessageSender implements MessageSender {
   readonly sent: string[] = [];
+  /** The id each sent message got, in the order they went out. */
+  readonly sentIds: string[] = [];
   readonly deleted: string[] = [];
 
   async send(text: string): Promise<string> {
     this.sent.push(text);
-    return String(this.sent.length);
+    const messageId = String(this.sent.length);
+    this.sentIds.push(messageId);
+    return messageId;
   }
 
   async delete(messageId: string): Promise<void> {

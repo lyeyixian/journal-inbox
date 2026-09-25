@@ -1,6 +1,6 @@
 /**
  * One Telegram message. Never edited after it lands.
- * `slotName` says which prompt the entry answers. Prompts land with later tickets, so it stays unset for now.
+ * `slotName` says which prompt the entry answers, and stays unset when no prompt was open.
  */
 export type Entry = {
   receivedAt: Date;
